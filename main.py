@@ -159,8 +159,8 @@ async def ara(update: Update, context: ContextTypes.DEFAULT_TYPE):
     firms = google_maps_search(sector, country)
 
     if not firms:
-        await update.message.reply_text("❌ Google Maps API anahtarı eksik veya sonuç bulunamadı.")
-        return
+    await update.message.reply_text("❌ Sonuç bulunamadı. Farklı ülke veya sektör dene.")
+    return
 
     await update.message.reply_text(f"✅ {len(firms)} firma bulundu. Mailler aranıyor...")
 
