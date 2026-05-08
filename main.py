@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, MessageHandler, filters, C
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN = 8605684770:AAHrhMgTeScvVctVGkvpPnaHm44LgDuotJc
+BOT_TOKEN = "8605684770:AAHrhMgTeScvVctVGkvpPnaHm44LgDuotJc"
 HUNTER_API_KEY = os.environ.get("HUNTER_API_KEY", "")
 
 SECTORS = {
