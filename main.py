@@ -25,7 +25,30 @@ SECTORS = {
 }
 
 def google_maps_search(query, country):
-    if not GOOGLE_API_KEY:
+    try:
+        search_url = "https://nominatim.openstreetmap.org/search"
+        params = {
+            "q": f"{query} {country}",
+            "format": "json",
+            "limit": 10,
+            "addressdetails": 1,
+        }
+        headers = {"User-Agent": "ilac-ihracat-bot/1.0"}
+        response = requests.get(search_url, params=params, headers=headers, timeout=10)
+        data = response.json()
+        results = []
+        for place in data:
+            results.append({
+                "name": place.get("display_name", "").split(",")[0],
+                "address": place.get("display_name", ""),
+                "phone": "",
+                "website": "",
+                "rating": "",
+            })
+            time.sleep(0.5)
+        return results
+    except Exception as e:
+        logging.error(f"OpenStreetMap error: {e}")
         return []
     try:
         search_query = f"{query} {country}"
