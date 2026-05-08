@@ -12,7 +12,6 @@ logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = "8605684770:AAHrhMgTeScvVctVGkvpPnaHm44LgDuotJc"
 HUNTER_API_KEY = os.environ.get("HUNTER_API_KEY", "")
-GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY", "")
 
 SECTORS = {
     "ecza": "pharmacy wholesaler",
@@ -44,40 +43,12 @@ def google_maps_search(query, country):
                 "phone": "",
                 "website": "",
                 "rating": "",
+                "email": "",
             })
             time.sleep(0.5)
         return results
     except Exception as e:
         logging.error(f"OpenStreetMap error: {e}")
-        return []
-    try:
-        search_query = f"{query} {country}"
-        url = "https://maps.googleapis.com/maps/api/place/textsearch/json"
-        params = {"query": search_query, "key": GOOGLE_API_KEY}
-        response = requests.get(url, params=params, timeout=10)
-        data = response.json()
-        results = []
-        for place in data.get("results", [])[:10]:
-            place_id = place.get("place_id")
-            detail_url = "https://maps.googleapis.com/maps/api/place/details/json"
-            detail_params = {
-                "place_id": place_id,
-                "fields": "name,formatted_address,formatted_phone_number,website,rating",
-                "key": GOOGLE_API_KEY
-            }
-            detail_resp = requests.get(detail_url, params=detail_params, timeout=10)
-            detail = detail_resp.json().get("result", {})
-            results.append({
-                "name": detail.get("name", ""),
-                "address": detail.get("formatted_address", ""),
-                "phone": detail.get("formatted_phone_number", ""),
-                "website": detail.get("website", ""),
-                "rating": detail.get("rating", ""),
-            })
-            time.sleep(0.5)
-        return results
-    except Exception as e:
-        logging.error(f"Google Maps error: {e}")
         return []
 
 def extract_email_from_website(website):
@@ -109,7 +80,7 @@ def create_excel(firms, country, sector):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Leads"
-    headers = ["Firma Adı", "Adres", "Telefon", "Website", "Email", "Puan", "Ülke", "Sektör"]
+    headers = ["Firma Adı", "Adres", "Telefon", "Website", "Email", "Ülke", "Sektör"]
     ws.append(headers)
     for f in firms:
         ws.append([
@@ -118,7 +89,6 @@ def create_excel(firms, country, sector):
             f.get("phone", ""),
             f.get("website", ""),
             f.get("email", ""),
-            f.get("rating", ""),
             country,
             sector,
         ])
@@ -133,7 +103,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/ara [ülke] [sektör] — Firma bul + Excel oluştur\n"
         "/mail [domain] — Domain'den mail bul\n\n"
         "Sektörler:\necza, hastane, klinik, turizm, ithalatci, tedarik, tercuman\n\n"
-        "Örnek:\n"
+        "Örnekler:\n"
         "/ara Kenya ecza\n"
         "/ara UAE hastane\n"
         "/mail firma.com"
@@ -159,8 +129,8 @@ async def ara(update: Update, context: ContextTypes.DEFAULT_TYPE):
     firms = google_maps_search(sector, country)
 
     if not firms:
-    await update.message.reply_text("❌ Sonuç bulunamadı. Farklı ülke veya sektör dene.")
-    return
+        await update.message.reply_text("❌ Sonuç bulunamadı. Farklı ülke veya sektör dene.")
+        return
 
     await update.message.reply_text(f"✅ {len(firms)} firma bulundu. Mailler aranıyor...")
 
